@@ -6,10 +6,10 @@ Main Program Starts Here
 import logging
 import os
 
+# need to install these modules
 import sqlalchemy as db
 from flask import Flask, request
-
-# need to install these modules
+from dotenv import load_dotenv
 from telebot import TeleBot
 from telebot.types import BotCommand, BotCommandScopeAllPrivateChats, BotCommandScopeAllGroupChats, Update, \
     BotCommandScopeAllChatAdministrators
@@ -75,13 +75,15 @@ def set_bot_credentials(bot_instance: TeleBot):
     )
 
 
+load_dotenv()
+
 webhook = False
-constants = Constants(os.environ.get('BOT_TOKEN'), os.environ.get('HOST_NAME'))  # get token from @BotFather
+constants = Constants(os.getenv('BOT_TOKEN'), os.getenv('HOST_NAME'))  # get token from @BotFather
 bot = initialize_bot()
 set_bot_credentials(bot)
 
 # database setup
-engine = db.create_engine(rf"{os.environ.get('DB_URI')}?check_same_thread=False")
+engine = db.create_engine(rf"{os.getenv('DB_URI')}?check_same_thread=False")
 conn = engine.connect()
 metadata = db.MetaData()
 groups = db.Table('groups_config', metadata, autoload=True, autoload_with=engine)
@@ -104,7 +106,7 @@ if webhook:
     app = Flask(__name__)
 
 
-    @app.route('/' + os.environ.get('BOT_TOKEN'), methods=['POST'])
+    @app.route('/' + os.getenv('BOT_TOKEN'), methods=['POST'])
     def set_webhook():
         """
         Setting webhook for bot
