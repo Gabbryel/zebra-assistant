@@ -15,6 +15,7 @@ facebook-scraper = "*"
 instaloader = "*"
 google-api-python-client = "*"
 python-dotenv = "*"
+scrapetube = "*"
 
 [dev-packages]
 
