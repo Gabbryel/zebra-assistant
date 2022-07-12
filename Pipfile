@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "*"
+pytelegrambotapi = "*"
+flask-sqlalchemy = "*"
+sqlalchemy = "*"
+free-proxy = "*"
+captcha = "*"
+schedule = "*"
+facebook-scraper = "*"
+instaloader = "*"
+google-api-python-client = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
