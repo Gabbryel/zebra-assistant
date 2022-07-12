@@ -11,7 +11,7 @@ from datetime import datetime
 import schedule
 import telebot
 from sqlalchemy import update, delete, select, insert
-from telebot.apihelper import ApiTelegramException, ApiException
+from telebot.apihelper import ApiTelegramException
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from zebra_assistant import bot, func, repository, constants, groups, posts, conn
@@ -20,25 +20,25 @@ MAKE_ME_ADMIN = "Please make me an admin with all rights and permissions in orde
 
 
 def check_for_new_updates(id_chat):
-    try:
-        check_msg = bot.send_message(id_chat, "Checking for new updates...", disable_notification=True)
-        query = select(groups.c.chat_id).where(groups.c.autopost == 'on')
-        result = conn.execute(query).fetchall()
-        result = [group[0] for group in result]
-        yt_response = send_yt_videos(result)
-        # bc_featured = send_featured_bandcamp_album(groups)
-        # insta_response = send_insta_post(groups)
-        # fb_response = send_facebook_posts(groups)
-        # zb_response = send_zebrabooking_dj(groups)
-        if yt_response:
-            bot.delete_message(id_chat, check_msg.message_id)
-        else:
-            bot.edit_message_text("<b>Checked</b> No new Video/Post/Track found.", id_chat,
-                                  check_msg.message_id)
-    except ApiException as e:
-        print(e.args)
-    except Exception as e:
-        logging.error(e)
+    # try:
+    check_msg = bot.send_message(id_chat, "Checking for new updates...", disable_notification=True)
+    query = select(groups.c.chat_id).where(groups.c.autopost == 'on')
+    result = conn.execute(query).fetchall()
+    result = [group[0] for group in result]
+    # yt_response = send_yt_videos(result)
+    # bc_featured = send_featured_bandcamp_album(result)
+    # insta_response = send_insta_post(result)
+    fb_response = send_facebook_posts(result)
+    # zb_response = send_zebrabooking_dj(result)
+    if fb_response:
+        bot.delete_message(id_chat, check_msg.message_id)
+    else:
+        bot.edit_message_text("<b>Checked</b> No new Video/Post/Track found.", id_chat,
+                              check_msg.message_id)
+    # except ApiException as e:
+    #     print(e.args)
+    # except Exception as e:
+    #     logging.error(e)
 
 
 @bot.message_handler(is_admin=True, chat_types=['group', 'supergroup'], commands=['check'])
@@ -60,6 +60,7 @@ def send_yt_videos(chats):
         videos = repository.get_yt_videos(constants.yt_api_key, constants.yt_channel_id, response[0])
         if isinstance(videos, Exception):
             logging.error(videos)
+            return False
         else:
             for video in videos:
                 upcoming = True if video.get("liveBroadcastContent") == "upcoming" else False
@@ -67,8 +68,11 @@ def send_yt_videos(chats):
                 keyboard.add(InlineKeyboardButton(text="Watch on Youtube", url=video.get("url")))
                 msg = "<b>New Youtube Video</b>\n<a href='{}'>{}</a>".format(video.get('url'), video.get('title'))
                 for chat in chats:
-                    msg = bot.send_message(chat, msg, reply_markup=keyboard, parse_mode="HTML",
-                                           disable_web_page_preview=False)
+                    try:
+                        msg = bot.send_message(chat, msg, reply_markup=keyboard, parse_mode="HTML",
+                                               disable_web_page_preview=False)
+                    except ApiTelegramException:
+                        pass
                     for entity in msg.entities:
                         if entity.url == 'text_url':
                             logging.error(entity)
@@ -88,8 +92,8 @@ def send_insta_post(chats):
     try:
         response = conn.execute(select(posts.c.last_insta_post_sent)).fetchone()
         result = repository.get_insta_posts(constants.insta_username, response[0])
-        if isinstance(posts, Exception):
-            logging.error(posts)
+        if isinstance(result, Exception):
+            logging.error(result)
         else:
             for post in result:
                 keyboard = InlineKeyboardMarkup(row_width=1)
@@ -99,7 +103,7 @@ def send_insta_post(chats):
                     bot.send_photo(chat, post[2], caption=msg, reply_markup=keyboard, parse_mode="HTML")
             query = update(posts).values(last_insta_post_sent=datetime.utcnow().isoformat()[0:19] + "Z")
             conn.execute(query)
-            return True if posts else False
+            return True if result else False
     except Exception as e:
         logging.error(e)
 
@@ -122,7 +126,7 @@ def send_facebook_posts(chats):
                                            caption=msg, reply_markup=keyboard)
                         elif post.get("images") is not None:
                             image = post.get("images")[0]
-                            bot.send_photo(chat_id=chat, photo=image, caption=msg, reply_markup=keyboard)
+                            bot.send_message(chat, msg, reply_markup=keyboard)
             query = update(posts).values(last_fb_post_sent=datetime.utcnow().isoformat()[0:19] + "Z")
             conn.execute(query)
             return True if result else False
@@ -134,7 +138,7 @@ def send_zebrabooking_dj(chats):
     try:
         response = conn.execute(select(posts.c.sent_artists)).fetchone()[0]
         last_artists_sent = json.loads(response)
-        events, new_events_fetched = repository.get_future_events(constants.webhook_url, last_artists_sent)
+        events, new_events_fetched = repository.get_future_events(constants.website_url, last_artists_sent)
         if isinstance(events, Exception):
             logging.error(events)
         else:
@@ -240,7 +244,7 @@ def config_bot_user(message):
 @bot.message_handler(is_admin=True, chat_types=['group', 'supergroup'], is_authorized=True, commands=['config'])
 def config_bot(message):
     try:
-        token = telebot.util.extract_arguments(message.text).strip()
+        # token = telebot.util.extract_arguments(message.text).strip()
         bot.delete_message(message.chat.id, message.message_id)
         keyboard = InlineKeyboardMarkup()
         options = [

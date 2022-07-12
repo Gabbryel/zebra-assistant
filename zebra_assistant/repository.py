@@ -63,22 +63,22 @@ def get_insta_posts(username, last_insta_post_sent):
 
 
 def get_facebook_posts(username, last_sent):
-    try:
-        warnings.filterwarnings("ignore")
-        posts_list = []
-        for post in get_posts(username, pages=3):
-            post_time = post['time'].strftime("%Y-%m-%dT%H:%M:%SZ")
-            if last_sent < post_time:
-                url = post['post_url']
-                text = post['text'] if len(post['text']) < 99 else post['text'][:100] + '...'
-                images = post['images'] if len(post['images']) > 0 else None
-                video = post['video']
-                video_thumbnail = post['video_thumbnail']
-                posts_list.append({'url': url, 'text': text, 'images': images, 'video': video,
-                                   'video_thumbnail': video_thumbnail})
-        return posts_list[::-1]
-    except Exception as e:
-        return e
+    # try:
+    warnings.filterwarnings("ignore")
+    posts_list = []
+    for post in get_posts(username, pages=3):
+        post_time = post['time'].strftime("%Y-%m-%dT%H:%M:%SZ")
+        if last_sent < post_time:
+            url = post['post_url']
+            text = post['text'] if len(post['text']) < 99 else post['text'][:100] + '...'
+            images = post['images'] if len(post['images']) > 0 else None
+            video = post['video']
+            video_thumbnail = post['video_thumbnail']
+            posts_list.append({'url': url, 'text': text, 'images': images, 'video': video,
+                               'video_thumbnail': video_thumbnail})
+    return posts_list[::-1]
+    # except Exception as e:
+    #     return e
 
 
 def get_future_events(url, last_artists_sent):
@@ -91,15 +91,18 @@ def get_future_events(url, last_artists_sent):
             dj_list = dj_list.find_all('a')
             future_events_list = []
             new_events_fetched = []
+
             for dj in dj_list:
                 dj_url = url + dj.get('href')
                 dj_source = requests.get(dj_url, headers={'User-Agent': random.choice(func.USER_AGENTS)}).text
                 dj_soup = BeautifulSoup(dj_source, 'lxml')
                 future_events = dj_soup.find_all('div', class_='future-events-index')
+
                 for i, _event in enumerate(future_events):
                     if i == 0:
                         continue
                     events = _event.find_all('div', class_='event')
+
                     for event in events:
                         event_response = []
                         event_img = event.find_all('div', class_='event-image')
@@ -108,6 +111,7 @@ def get_future_events(url, last_artists_sent):
                             for img_url in img:
                                 event_response.append(img_url.get('src'))
                         event_desc = event.find_all('div', class_='event-description')
+
                         for desc in event_desc:
                             event_name = desc.find('div', class_="event-name").p.text
                             event_venue = desc.find('div', class_="venue-name").p.text
@@ -135,6 +139,7 @@ def extract_img_param(album):
 
 def get_new_bandcamp_albums():
     try:
+        # TODO: Proxies
         proxies = {'http': func.get_proxy()}
         source = requests.get("https://zebrarec.bandcamp.com/music",
                               headers={'User-Agent': random.choice(func.USER_AGENTS)}, proxies=proxies).text
@@ -145,15 +150,14 @@ def get_new_bandcamp_albums():
 
         for response in soup.find_all('ol', id="music-grid",
                                       class_=["editable-grid", "music-grid", "columns-4", "public"]):
-            for index, album in enumerate(response.find_all('li', class_=["music-grid-item", "square", "first-four"]),
-                                          start=1):
+            for index, _album in enumerate(response.find_all('li', class_=["music-grid-item", "square", "first-four"]),
+                                           start=1):
                 if index > 10:
                     break
-                album_url = album.a['href']
+                album_url = _album.a['href']
                 if album_url[:5] != "https":
                     album_url = url + album_url
-                album_pg = requests.get(album_url, headers={'User-Agent': random.choice(func.USER_AGENTS)},
-                                        proxies=func.get_proxy()).text
+                album_pg = requests.get(album_url, headers={'User-Agent': random.choice(func.USER_AGENTS)}).text
                 soup = BeautifulSoup(album_pg, 'lxml')
                 date_match = re.search(
                     r"(\w+ \d{1,2}, \d{4})",
@@ -162,8 +166,8 @@ def get_new_bandcamp_albums():
                     date = date_match.group(1)
                     date = datetime.datetime.strptime(date, '%B %d, %Y')
                     today_date = datetime.datetime.now()
-                    if date == today_date - datetime.timedelta(days=1):
-                        album_img_url, album_title = extract_img_param(album)
+                    if date == today_date-datetime.timedelta(days=1):
+                        album_img_url, album_title = extract_img_param(_album)
                         new_albums.append({'url': album_url, 'img_url': album_img_url, 'title': album_title})
         return new_albums[::-1]
     except Exception as e:
@@ -179,18 +183,18 @@ def get_featured_bandcamp_albums(featured_albums_sent):
 
         url = "https://zebrarec.bandcamp.com"
         featured_albums = []
-        new_albums_fetched = []
+        new_fetched = []
 
         for featured_album in soup.find_all('ol',
                                             class_=["featured-grid", "featured-items", "featured-music", "occupied"]):
-            for album in featured_album.find_all('li', class_=["featured-item"]):
-                album_url = album.a['href']
+            for _album in featured_album.find_all('li', class_=["featured-item"]):
+                album_url = _album.a['href']
                 if album_url[:5] != "https":
                     album_url = url + album_url
                 if album_url not in featured_albums_sent:
-                    album_img_url, album_title = extract_img_param(album)
+                    album_img_url, album_title = extract_img_param(_album)
                     featured_albums.append({'url': album_url, 'img_url': album_img_url, 'title': album_title})
-                new_albums_fetched.append(album_url)
-        return featured_albums, new_albums_fetched
+                new_fetched.append(album_url)
+        return featured_albums, new_fetched
     except Exception as e:
         raise e

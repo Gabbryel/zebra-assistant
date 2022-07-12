@@ -1,9 +1,6 @@
 """
 ALl fields are required to the config file.
 """
-
-BOT_TOKEN = "1901193897:AAH15JKEQVRy1GAamYX6XnPLYfn7NDLiYfs"  # get your bot token from @BotFather
-HOST_NAME = "zebra-assistant"  # host name of the server
 ADMINS_LIST_DICT = {'1924955781': '@paadunga'}
 ACCESS_TOKEN = "7864"  # you can set your own access token here
 

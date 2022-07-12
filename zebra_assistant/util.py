@@ -29,7 +29,6 @@ class Constants:
         self.bot_owner = 'zebramusic'
         self.token: str = token
         self.host_name = host_name
-        self.db_file = 'data/database.db'
         self.log_grp = '-1001389138549'
 
     @property
@@ -77,8 +76,8 @@ class Constants:
         return self._yt_channel_id
 
     @yt_channel_id.setter
-    def yt_channel_id(self, id):
-        self._yt_channel_id = id
+    def yt_channel_id(self, chnl_id):
+        self._yt_channel_id = chnl_id
 
     @property
     def insta_username(self):

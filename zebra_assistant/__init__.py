@@ -4,6 +4,7 @@ Main Program Starts Here
 
 # built-in modules
 import logging
+import os
 
 import sqlalchemy as db
 from flask import Flask, request
@@ -36,6 +37,11 @@ def set_bot_credentials(bot_instance: TeleBot):
     constants.name = bot_info.first_name
     constants.username = bot_info.username
     constants.admins_dict = config.ADMINS_LIST_DICT
+    constants.website_url = config.WEBSITE_URL
+    constants.yt_api_key = config.YT_API_KEY
+    constants.yt_channel_id = config.YT_CHANNEL_ID
+    constants.insta_username = config.INSTA_USERNAME
+    constants.fb_username = config.FB_USERNAME
 
     # deleting all previous commands
     bot_instance.delete_my_commands()
@@ -70,12 +76,12 @@ def set_bot_credentials(bot_instance: TeleBot):
 
 
 webhook = False
-constants = Constants(config.BOT_TOKEN, config.HOST_NAME)  # get token from @BotFather
+constants = Constants(os.environ.get('BOT_TOKEN'), os.environ.get('HOST_NAME'))  # get token from @BotFather
 bot = initialize_bot()
 set_bot_credentials(bot)
 
 # database setup
-engine = db.create_engine(rf"sqlite:///{constants.db_file}?check_same_thread=False")
+engine = db.create_engine(rf"{os.environ.get('DB_URI')}?check_same_thread=False")
 conn = engine.connect()
 metadata = db.MetaData()
 groups = db.Table('groups_config', metadata, autoload=True, autoload_with=engine)
@@ -98,7 +104,7 @@ if webhook:
     app = Flask(__name__)
 
 
-    @app.route('/' + config.BOT_TOKEN, methods=['POST'])
+    @app.route('/' + os.environ.get('BOT_TOKEN'), methods=['POST'])
     def set_webhook():
         """
         Setting webhook for bot
