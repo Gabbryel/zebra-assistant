@@ -36,7 +36,7 @@ def check_for_new_updates(id_chat):
             bot.edit_message_text("<b>Checked</b> No new Video/Post/Track found.", id_chat,
                                   check_msg.message_id)
     except ApiTelegramException as e:
-        print(e.args)
+        logging.error(e.result_json)
     except Exception as e:
         logging.error(e)
 
@@ -86,6 +86,7 @@ def send_yt_videos(chats):
             return True if videos else False
     except Exception as e:
         logging.error(e)
+        return False
 
 
 def send_insta_post(chats):
@@ -94,6 +95,7 @@ def send_insta_post(chats):
         result = repository.get_insta_posts(constants.insta_username, response[0])
         if isinstance(result, Exception):
             logging.error(result)
+            return False
         else:
             for post in result:
                 keyboard = InlineKeyboardMarkup(row_width=1)
@@ -106,6 +108,7 @@ def send_insta_post(chats):
             return True if result else False
     except Exception as e:
         logging.error(e)
+        return False
 
 
 def send_facebook_posts(chats):
@@ -114,6 +117,7 @@ def send_facebook_posts(chats):
         result = repository.get_facebook_posts(constants.fb_username, response[0])
         if isinstance(result, Exception):
             logging.error(result)
+            return False
         else:
             for post in result:
                 keyboard = InlineKeyboardMarkup(row_width=1)
@@ -131,6 +135,7 @@ def send_facebook_posts(chats):
             return True if result else False
     except Exception as e:
         logging.error(e)
+        return False
 
 
 def send_zebrabooking_dj(chats):
@@ -140,20 +145,24 @@ def send_zebrabooking_dj(chats):
         events, new_events_fetched = repository.get_future_events(constants.website_url, last_artists_sent)
         if isinstance(events, Exception):
             logging.error(events)
+            return False
         else:
             for event in events:
-                msg = f"""<b>New Event</b>
+                msg = f"""<b>New Event on <a href='https://zebrabooking.com'>ZebraBooking</a></b>
 
 <b>Event Name: </b>{event[1]}
 <b>Event Venue: </b>{event[2]}
 <b>Event City: </b>{event[3]}"""
+                keyboard = InlineKeyboardMarkup(row_width=1)
+                keyboard.add(InlineKeyboardButton(text="Visit Artist's Page", url=event[4]))
                 for chat in chats:
-                    bot.send_photo(chat, photo=event[0], caption=msg, parse_mode="HTML")
+                    bot.send_photo(chat, photo=event[0], caption=msg, parse_mode="HTML", reply_markup=keyboard)
             query = update(posts).values(sent_artists=json.dumps(list(set(new_events_fetched))))
             conn.execute(query)
             return True if events else False
     except Exception as e:
         logging.error(e)
+        return False
 
 
 def send_featured_bandcamp_album(chats):
@@ -163,11 +172,13 @@ def send_featured_bandcamp_album(chats):
         featured_album, new_albums_fetched = repository.get_featured_bandcamp_albums(featured_albums_sent)
         if isinstance(featured_album, Exception):
             logging.error(featured_album)
+            return False
         else:
             for album in featured_album:
                 keyboard = InlineKeyboardMarkup(row_width=1)
                 keyboard.add(InlineKeyboardButton(text="Listen on Bandcamp", url=album.get("url")))
-                msg = "<b>New Featured Album</b>\n<a href='{}'>{}</a>".format(album.get('url'), album.get('title'))
+                msg = "<b>New Featured Album on Bandcamp</b>\n<a href='{}'>{}</a>"\
+                    .format(album.get('url'), album.get('title'))
                 for chat in chats:
                     msg = bot.send_photo(chat, photo=album.get('img_url'), caption=msg, reply_markup=keyboard,
                                          parse_mode="HTML")
@@ -177,6 +188,7 @@ def send_featured_bandcamp_album(chats):
             return True if featured_album else False
     except Exception as e:
         logging.error(e)
+        return False
 
 
 def send_new_bandcamp_album(chats):
@@ -184,6 +196,7 @@ def send_new_bandcamp_album(chats):
         new_album = repository.get_new_bandcamp_albums()
         if isinstance(new_album, Exception):
             logging.error(new_album)
+            return False
         else:
             for album in new_album:
                 keyboard = InlineKeyboardMarkup(row_width=1)
@@ -194,6 +207,7 @@ def send_new_bandcamp_album(chats):
                                          parse_mode="HTML")
     except Exception as e:
         logging.error(e)
+        return False
 
 
 def autopost():
@@ -419,7 +433,7 @@ def report_user(message):
                 bot.send_message(message.chat.id,
                                  f"{message.from_user.full_name} has Reported against {replied_msg.from_user.full_name}"
                                  f"\nReason: {reason}")
-                bot.send_message(constants.USER_REPORTING_GRP,
+                bot.send_message(constants.log_grp,
                                  f"{message.from_user.full_name} has Reported against {replied_msg.from_user.full_name}"
                                  f"\nReason: {reason}")
             except ApiTelegramException as error:

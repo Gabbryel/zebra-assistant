@@ -63,22 +63,22 @@ def get_insta_posts(username, last_insta_post_sent):
 
 
 def get_facebook_posts(username, last_sent):
-    # try:
-    warnings.filterwarnings("ignore")
-    posts_list = []
-    for post in get_posts(username, pages=3):
-        post_time = post['time'].strftime("%Y-%m-%dT%H:%M:%SZ")
-        if last_sent < post_time:
-            url = post['post_url']
-            text = post['text'] if len(post['text']) < 99 else post['text'][:100] + '...'
-            images = post['images'] if len(post['images']) > 0 else None
-            video = post['video']
-            video_thumbnail = post['video_thumbnail']
-            posts_list.append({'url': url, 'text': text, 'images': images, 'video': video,
-                               'video_thumbnail': video_thumbnail})
-    return posts_list[::-1]
-    # except Exception as e:
-    #     return e
+    try:
+        warnings.filterwarnings("ignore")
+        posts_list = []
+        for post in get_posts(username, pages=3):
+            post_time = post['time'].strftime("%Y-%m-%dT%H:%M:%SZ")
+            if last_sent < post_time:
+                url = post['post_url']
+                text = post['text'] if len(post['text']) < 99 else post['text'][:100] + '...'
+                images = post['images'] if len(post['images']) > 0 else None
+                video = post['video']
+                video_thumbnail = post['video_thumbnail']
+                posts_list.append({'url': url, 'text': text, 'images': images, 'video': video,
+                                   'video_thumbnail': video_thumbnail})
+        return posts_list[::-1]
+    except Exception as e:
+        return e
 
 
 def get_future_events(url, last_artists_sent):
@@ -120,6 +120,7 @@ def get_future_events(url, last_artists_sent):
                                 event_response.append(event_name)
                                 event_response.append(event_venue)
                                 event_response.append(event_city)
+                                event_response.append(dj_url)
                                 if event_response not in future_events_list:
                                     future_events_list.append(event_response)
                             new_events_fetched.append((event_venue+event_city).lower())
