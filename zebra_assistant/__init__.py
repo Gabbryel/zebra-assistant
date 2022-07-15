@@ -83,9 +83,9 @@ bot = initialize_bot()
 set_bot_credentials(bot)
 
 # database setup
-DB_FILE = os.getenv('DATABASE_URL')
-DB_FILE = DB_FILE.replace('postgres://', 'postgresql://')
-engine = db.create_engine(DB_FILE, connect_args={'check_same_thread': False}, echo=True)
+DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://')
+engine = db.create_engine(DATABASE_URL)
 conn = engine.connect()
 metadata = db.MetaData()
 groups = db.Table('groups_config', metadata, autoload=True, autoload_with=engine)
