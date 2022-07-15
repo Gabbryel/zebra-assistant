@@ -83,7 +83,7 @@ bot = initialize_bot()
 set_bot_credentials(bot)
 
 # database setup
-engine = db.create_engine(rf"{os.getenv('DB_URI')}?check_same_thread=False")
+engine = db.create_engine(rf"{os.getenv('DATABASE_URL')}?check_same_thread=False")
 conn = engine.connect()
 metadata = db.MetaData()
 groups = db.Table('groups_config', metadata, autoload=True, autoload_with=engine)

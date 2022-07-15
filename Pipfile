@@ -16,6 +16,8 @@ instaloader = "*"
 google-api-python-client = "*"
 python-dotenv = "*"
 scrapetube = "*"
+psycopg2 = "*"
+psycopg-binary = "*"
 
 [dev-packages]
 

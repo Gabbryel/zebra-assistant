@@ -20,25 +20,25 @@ MAKE_ME_ADMIN = "Please make me an admin with all rights and permissions in orde
 
 
 def check_for_new_updates(id_chat):
-    # try:
-    check_msg = bot.send_message(id_chat, "Checking for new updates...", disable_notification=True)
-    query = select(groups.c.chat_id).where(groups.c.autopost == 'on')
-    result = conn.execute(query).fetchall()
-    result = [group[0] for group in result]
-    # yt_response = send_yt_videos(result)
-    # bc_featured = send_featured_bandcamp_album(result)
-    # insta_response = send_insta_post(result)
-    fb_response = send_facebook_posts(result)
-    # zb_response = send_zebrabooking_dj(result)
-    if fb_response:
-        bot.delete_message(id_chat, check_msg.message_id)
-    else:
-        bot.edit_message_text("<b>Checked</b> No new Video/Post/Track found.", id_chat,
-                              check_msg.message_id)
-    # except ApiException as e:
-    #     print(e.args)
-    # except Exception as e:
-    #     logging.error(e)
+    try:
+        check_msg = bot.send_message(id_chat, "Checking for new updates...", disable_notification=True)
+        query = select(groups.c.chat_id).where(groups.c.autopost == 'on')
+        result = conn.execute(query).fetchall()
+        result = [group[0] for group in result]
+        yt_response = send_yt_videos(result)
+        bc_featured = send_featured_bandcamp_album(result)
+        insta_response = send_insta_post(result)
+        fb_response = send_facebook_posts(result)
+        zb_response = send_zebrabooking_dj(result)
+        if yt_response or bc_featured or insta_response or fb_response or zb_response:
+            bot.delete_message(id_chat, check_msg.message_id)
+        else:
+            bot.edit_message_text("<b>Checked</b> No new Video/Post/Track found.", id_chat,
+                                  check_msg.message_id)
+    except ApiTelegramException as e:
+        print(e.args)
+    except Exception as e:
+        logging.error(e)
 
 
 @bot.message_handler(is_admin=True, chat_types=['group', 'supergroup'], commands=['check'])
@@ -125,7 +125,6 @@ def send_facebook_posts(chats):
                             bot.send_video(chat_id=chat, video=post.get("video"), thumb=post.get('video_thumbnail'),
                                            caption=msg, reply_markup=keyboard)
                         elif post.get("images") is not None:
-                            image = post.get("images")[0]
                             bot.send_message(chat, msg, reply_markup=keyboard)
             query = update(posts).values(last_fb_post_sent=datetime.utcnow().isoformat()[0:19] + "Z")
             conn.execute(query)
@@ -206,6 +205,7 @@ def autopost():
         send_facebook_posts(chats)
         send_zebrabooking_dj(chats)
         send_new_bandcamp_album(chats)
+        send_featured_bandcamp_album(chats)
     except Exception as e:
         logging.error(e)
 
