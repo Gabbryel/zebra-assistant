@@ -1,0 +1,64 @@
+{
+  "name": "Zebra Assistant Bot",
+  "description": "This is an official Zebra Assistant Bot. Please do not change the behavior of this bot. If you face any issues, please contact developer of the bot.",
+  "keywords": [
+    "zebra-assisstant",
+    "music",
+    "zebra-music"
+  ],
+  "website": "https://zebrabooking.com/",
+  "repository": "https://github.com/Itsydv/zebra-assistant",
+  "env": {
+    "BOT_TOKEN": {
+      "description": "Bot Token of the bot provided by Telegram",
+      "required": true
+    },
+    "HOST_NAME": {
+      "description": "App Name",
+      "required": true
+    },
+    "ADMINS_LIST": {
+      "description": "List of ids of admins of the bot separated by comma",
+      "required": true
+    },
+    "LOG_GROUP_ID": {
+      "description": "Your Telegram ID or Telegram group ID, required to send logs to telegram group",
+      "required": true
+    },
+    "YT_API_KEY": {
+      "description": "Youtube API Key",
+      "required": true
+    },
+    "YT_CHANNEL_ID": {
+      "description": "Channel ID of your Youtube Channel",
+      "required": true,
+      "value": "UC-W3FNosO2yBKij5kyl-GSg"
+    },
+    "INSTA_USERNAME": {
+      "description": "Username of your Instagram Account",
+      "required": true,
+      "value": "zebra_rec"
+    },
+    "FB_USERNAME": {
+      "description": "Username of your Facebook Page",
+      "required": true,
+      "value": "ZbrRec"
+    },
+    "WEBSITE_URL": {
+      "description": "Website URL from where you want to fetch future events",
+      "required": true,
+      "value": "https://www.zebrabooking.com"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql",
+      "options": {
+        "version": "12"
+      }
+    }
+  ],
+  "buildpacks": [{
+    "url": "heroku/python"
+  }]
+}
