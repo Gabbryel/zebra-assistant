@@ -36,12 +36,13 @@ def set_bot_credentials(bot_instance: TeleBot):
     bot_info = bot_instance.get_me()
     constants.name = bot_info.first_name
     constants.username = bot_info.username
-    constants.admins_dict = config.ADMINS_LIST_DICT
-    constants.website_url = config.WEBSITE_URL
-    constants.yt_api_key = config.YT_API_KEY
-    constants.yt_channel_id = config.YT_CHANNEL_ID
-    constants.insta_username = config.INSTA_USERNAME
-    constants.fb_username = config.FB_USERNAME
+    constants.admins_list = os.getenv('ADMINS_LIST').split(',')
+    constants.website_url = os.getenv('WEBSITE_URL')
+    constants.yt_api_key = os.getenv('YT_API_KEY')
+    constants.yt_channel_id = os.getenv('YT_CHANNEL_ID')
+    constants.insta_username = os.getenv('INSTA_USERNAME')
+    constants.fb_username = os.getenv('FB_USERNAME')
+    constants.log_grp = os.getenv('LOG_GROUP_ID')
 
     # deleting all previous commands
     bot_instance.delete_my_commands()
@@ -58,7 +59,7 @@ def set_bot_credentials(bot_instance: TeleBot):
             BotCommand("kick", "Kick/ban a user"),
             BotCommand("mute", "Mute/restrict a user"),
             BotCommand("unmute", "Unmute a muted user"),
-            BotCommand("report", "Report bad person or scammer ")
+            BotCommand("report", "Report bad person or scammer")
         ],
         scope=BotCommandScopeAllChatAdministrators()  # use for all group chats admin
     )

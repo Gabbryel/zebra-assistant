@@ -16,7 +16,7 @@ class Constants:
     def __init__(self, token, host_name):
         self._name = None
         self._username = None
-        self._admins_dict: dict = {}
+        self._admins_list: list = []
         self.__version = "0.1"
         self.__author = "Itsydv"  # GitHub Username
         self.__email = "itsydv@outlook.com"
@@ -29,7 +29,7 @@ class Constants:
         self.bot_owner = 'zebramusic'
         self.token: str = token
         self.host_name = host_name
-        self.log_grp = '-1001389138549'
+        self.log_grp = None
 
     @property
     def name(self):
@@ -48,12 +48,12 @@ class Constants:
         self._username = username
 
     @property
-    def admins_dict(self):
-        return self._admins_dict
+    def admins_list(self):
+        return self._admins_list
 
-    @admins_dict.setter
-    def admins_dict(self, admins_dict):
-        self._admins_dict = admins_dict
+    @admins_list.setter
+    def admins_list(self, admins_list):
+        self._admins_list = admins_list
 
     @property
     def website_url(self):

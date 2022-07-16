@@ -78,7 +78,7 @@ class IsAuthorized(telebot.custom_filters.SimpleCustomFilter):
 
     @staticmethod
     def check(message: telebot.types.Message, **kwargs):
-        return str(message.from_user.id) in constants.admins_dict.keys()
+        return str(message.from_user.id) in constants.admins_list
 
 
 bot.add_custom_filter(IsAuthorized())

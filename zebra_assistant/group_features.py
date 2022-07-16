@@ -433,9 +433,12 @@ def report_user(message):
                 bot.send_message(message.chat.id,
                                  f"{message.from_user.full_name} has Reported against {replied_msg.from_user.full_name}"
                                  f"\nReason: {reason}")
-                bot.send_message(constants.log_grp,
-                                 f"{message.from_user.full_name} has Reported against {replied_msg.from_user.full_name}"
-                                 f"\nReason: {reason}")
+                try:
+                    bot.send_message(constants.log_grp,
+                                     f"{message.from_user.full_name} has Reported against {replied_msg.from_user.full_name}"
+                                     f"\nReason: {reason}")
+                except:
+                    pass
             except ApiTelegramException as error:
                 bot.send_message(message.chat.id, string.capwords(error.result_json['description']),
                                  reply_to_message_id=message.message_id)
