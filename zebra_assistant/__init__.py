@@ -15,7 +15,6 @@ from telebot.types import BotCommand, BotCommandScopeAllPrivateChats, BotCommand
     BotCommandScopeAllChatAdministrators
 
 # files
-from config import config
 from zebra_assistant.util import Constants
 
 
