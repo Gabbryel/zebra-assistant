@@ -480,7 +480,7 @@ def delete_join_message(message):
             else:
                 add_group(message.chat.id)
                 bot.send_message(message.chat.id,
-                                 f"Hi! I am {constants.BOT_NAME}! Thanks for adding me! If you want a proper Group"
+                                 f"Hi! I am {constants.name}! Thanks for adding me! If you want a proper Group"
                                  f" Management services from me then make me an admin with all right and permissions "
                                  f"and then I will be able to perform a good service for You.!")
     except Exception as e:
