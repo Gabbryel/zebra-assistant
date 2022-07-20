@@ -1,6 +1,6 @@
 # Zebra Assistant Bot 🤖
 
-[![version-0.1](https://img.shields.io/badge/version-0.1-green)](https://github.com/Itsydv/Enigma)
+[![version-0.1](https://img.shields.io/badge/version-0.1-green)](https://github.com/Gabbryel/zebra-assistant)
 [![Python3](https://img.shields.io/badge/language-Python3-red)](https://www.python.org/downloads/)
 [![Telegram](https://img.shields.io/badge/Telegram-Channel-blue.svg)](https://t.me/CharlieBots)
 
@@ -9,7 +9,7 @@
 
 This is an official Telegram bot for the [Zebra Rec.](https://www.zebrabooking.com/) Company.
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Itsydv/zebra-assistant)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/gabbryel/zebra-assistant)
 
 ### Available Commands:
 
