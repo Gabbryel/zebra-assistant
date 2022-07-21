@@ -14,7 +14,7 @@ from sqlalchemy import update, delete, select, insert
 from telebot.apihelper import ApiTelegramException
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from zebra_assistant import bot, func, repository, constants, groups, posts, conn
+from zebra_assistant import bot, func, repository, constants, groups, posts, conn, util
 
 MAKE_ME_ADMIN = "Please make me an admin with all rights and permissions in order for me to complete this request !!"
 
@@ -470,7 +470,7 @@ def delete_join_message(message):
         for member in message.new_chat_members:
             if member.id != bot.get_me().id:
                 if not member.is_bot and func.get_welcome(message.chat.id) == "on":
-                    bot.send_message(message.chat.id, constants.welcome_msg(member.full_name, message.chat.title),
+                    bot.send_message(message.chat.id, util.welcome_msg(member.full_name, message.chat.title),
                                      disable_web_page_preview=True)
                 if not member.is_bot and bot.get_chat_member(message.chat.id, message.from_user.id).status not in [
                     'administrator'] \
