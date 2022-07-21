@@ -259,7 +259,10 @@ def config_bot_user(message):
 def config_bot(message):
     try:
         # token = telebot.util.extract_arguments(message.text).strip()
-        bot.delete_message(message.chat.id, message.message_id)
+        try:
+            bot.delete_message(message.chat.id, message.message_id)
+        except:
+            pass
         keyboard = InlineKeyboardMarkup()
         options = [
             InlineKeyboardButton("Welcome Message", callback_data="config-welcome"),
@@ -270,8 +273,7 @@ def config_bot(message):
         bot.send_message(message.chat.id, "These are the available options for you", reply_markup=keyboard)
     except Exception as e:
         if bot.get_chat_member(message.chat.id, bot.get_me().id).status not in ['administrator', 'creator']:
-            bot.send_message(message.chat.id,
-                             )
+            bot.send_message(message.chat.id, MAKE_ME_ADMIN)
         else:
             logging.error(e)
 
@@ -306,7 +308,10 @@ def admin_only_cmds(message):
 @bot.message_handler(is_admin=True, chat_types=['group', 'supergroup'], commands=['pin'])
 def pin_msg(message):
     try:
-        bot.delete_message(message.chat.id, message.message_id)
+        try:
+            bot.delete_message(message.chat.id, message.message_id)
+        except:
+            pass
         replied_msg = message.reply_to_message
         if replied_msg:
             bot.pin_chat_message(message.chat.id, replied_msg.message_id)
@@ -325,7 +330,10 @@ def pin_msg(message):
 @bot.message_handler(is_admin=True, chat_types=['group', 'supergroup'], commands=['unpin'])
 def unpin_msg(message):
     try:
-        bot.delete_message(message.chat.id, message.message_id)
+        try:
+            bot.delete_message(message.chat.id, message.message_id)
+        except:
+            pass
         replied_msg = message.reply_to_message
         if replied_msg:
             bot.unpin_chat_message(message.chat.id, replied_msg.message_id)
@@ -345,7 +353,10 @@ def unpin_msg(message):
 @bot.message_handler(is_admin=True, chat_types=['group', 'supergroup'], commands=['unpinall'])
 def unpin_all(message):
     try:
-        bot.delete_message(message.chat.id, message.message_id)
+        try:
+            bot.delete_message(message.chat.id, message.message_id)
+        except:
+            pass
         bot.unpin_all_chat_messages(message.chat.id)
     except Exception as e:
         if bot.get_chat_member(message.chat.id, bot.get_me().id).status not in ['administrator', 'creator']:
@@ -357,7 +368,10 @@ def unpin_all(message):
 @bot.message_handler(is_admin=True, chat_types=['group', 'supergroup'], commands=['invitelink'])
 def invite_link(message):
     try:
-        bot.delete_message(message.chat.id, message.message_id)
+        try:
+            bot.delete_message(message.chat.id, message.message_id)
+        except:
+            pass
         try:
             bot.send_message(message.chat.id,
                              f"Link to join this {message.chat.type} :-\n" +
@@ -374,7 +388,10 @@ def invite_link(message):
 @bot.message_handler(is_admin=True, chat_types=['group', 'supergroup'], commands=['kick', 'ban'])
 def kick_user(message):
     try:
-        bot.delete_message(message.chat.id, message.message_id)
+        try:
+            bot.delete_message(message.chat.id, message.message_id)
+        except:
+            pass
         replied_msg = message.reply_to_message
         if replied_msg:
             try:
@@ -398,7 +415,10 @@ def kick_user(message):
 @bot.message_handler(is_admin=True, chat_types=['group', 'supergroup'], commands=['mute', 'restrict'])
 def mute_user(message):
     try:
-        bot.delete_message(message.chat.id, message.message_id)
+        try:
+            bot.delete_message(message.chat.id, message.message_id)
+        except:
+            pass
         replied_msg = message.reply_to_message
         if replied_msg:
             try:
@@ -429,7 +449,10 @@ def report_user(message):
                 if len(reason) == 0:
                     bot.send_message(message.chat.id, "Please provide Reason of Reporting!")
                     return
-                bot.delete_message(message.chat.id, message.message_id)
+                try:
+                    bot.delete_message(message.chat.id, message.message_id)
+                except:
+                    pass
                 bot.send_message(message.chat.id,
                                  f"{message.from_user.full_name} has Reported against {replied_msg.from_user.full_name}"
                                  f"\nReason: {reason}")
