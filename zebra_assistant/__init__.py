@@ -35,7 +35,7 @@ def set_bot_credentials(bot_instance: TeleBot):
     bot_info = bot_instance.get_me()
     constants.name = bot_info.first_name
     constants.username = bot_info.username
-    constants.admins_list = os.getenv('ADMINS_LIST').split(',')
+    constants.admins_list = os.getenv('ADMINS_LIST').replace(', ', ',').split(',')
     constants.website_url = os.getenv('WEBSITE_URL')
     constants.yt_api_key = os.getenv('YT_API_KEY')
     constants.yt_channel_id = os.getenv('YT_CHANNEL_ID')
