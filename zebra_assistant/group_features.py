@@ -511,7 +511,7 @@ def delete_join_message(message):
 
 
 def add_group(group_id):
-    result = conn.execute(select(groups.c.chat_id).where(groups.c.chat_id == group_id))
+    result = conn.execute(select(groups.c.chat_id).where(groups.c.chat_id == group_id)).fetchone()
     if result is None:
         query = insert(groups).values(chat_id=group_id)
         conn.execute(query)
