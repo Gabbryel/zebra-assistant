@@ -59,7 +59,7 @@ def send_yt_videos(chats):
         response = conn.execute(query).fetchone()
         videos = repository.get_yt_videos(constants.yt_api_key, constants.yt_channel_id, response[0])
         if isinstance(videos, Exception):
-            logging.error(videos)
+            # logging.error(videos)
             return False
         else:
             for video in videos:
@@ -94,7 +94,7 @@ def send_insta_post(chats):
         response = conn.execute(select(posts.c.last_insta_post_sent)).fetchone()
         result = repository.get_insta_posts(constants.insta_username, response[0])
         if isinstance(result, Exception):
-            logging.error(result)
+            # logging.error(result)
             return False
         else:
             for post in result:
@@ -116,7 +116,7 @@ def send_facebook_posts(chats):
         response = conn.execute(select(posts.c.last_fb_post_sent)).fetchone()
         result = repository.get_facebook_posts(constants.fb_username, response[0])
         if isinstance(result, Exception):
-            logging.error(result)
+            # logging.error(result)
             return False
         else:
             for post in result:
@@ -144,7 +144,7 @@ def send_zebrabooking_dj(chats):
         last_artists_sent = json.loads(response)
         events, new_events_fetched = repository.get_future_events(constants.website_url, last_artists_sent)
         if isinstance(events, Exception):
-            logging.error(events)
+            # logging.error(events)
             return False
         else:
             for event in events:
@@ -171,7 +171,7 @@ def send_featured_bandcamp_album(chats):
         featured_albums_sent = json.loads(response)
         featured_album, new_albums_fetched = repository.get_featured_bandcamp_albums(featured_albums_sent)
         if isinstance(featured_album, Exception):
-            logging.error(featured_album)
+            # logging.error(featured_album)
             return False
         else:
             for album in featured_album:
@@ -195,7 +195,7 @@ def send_new_bandcamp_album(chats):
     try:
         new_album = repository.get_new_bandcamp_albums()
         if isinstance(new_album, Exception):
-            logging.error(new_album)
+            # logging.error(new_album)
             return False
         else:
             for album in new_album:
