@@ -35,7 +35,6 @@ def set_bot_credentials(bot_instance: TeleBot):
     bot_info = bot_instance.get_me()
     constants.name = bot_info.first_name
     constants.username = bot_info.username
-    constants.admins_list = os.getenv('ADMINS_LIST').replace(', ', ',').split(',')
     constants.website_url = os.getenv('WEBSITE_URL')
     constants.yt_api_key = os.getenv('YT_API_KEY')
     constants.yt_channel_id = os.getenv('YT_CHANNEL_ID')
@@ -70,31 +69,35 @@ def set_bot_credentials(bot_instance: TeleBot):
     )
 
     bot_instance.set_my_commands(
-        commands=[BotCommand("start", "Initialize the bot")],
+        commands=[
+            BotCommand("start", "Initialize the bot"),
+            BotCommand("config", "Configure Bot related settings"),
+            BotCommand("id", "Get your ID")],
         scope=BotCommandScopeAllPrivateChats()
     )
 
 
 load_dotenv()
 
-webhook = False
 constants = Constants(os.getenv('BOT_TOKEN'), os.getenv('HOST_NAME'))  # get token from @BotFather
 bot = initialize_bot()
 set_bot_credentials(bot)
-
-# database setup
-DATABASE_URL = os.getenv('DATABASE_URL')
-DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://')
-engine = db.create_engine(DATABASE_URL)
-conn = engine.connect()
-metadata = db.MetaData()
-groups = db.Table('groups_config', metadata, autoload=True, autoload_with=engine)
-posts = db.Table('posts_config', metadata, autoload=True, autoload_with=engine)
 
 # setup logging
 logging.basicConfig(level=logging.ERROR, filemode='a',
                     format='%(asctime)s : %(levelname)s - '
                            '%(funcName)s (%(filename)s) Function - %(message)s')
+
+# database setup
+DATABASE_URL = os.getenv('DATABASE_URL').replace('postgres://', 'postgresql://')
+if os.getenv('PRODUCTION') == 'true':
+    engine = db.create_engine(DATABASE_URL)
+else:
+    engine = db.create_engine(DATABASE_URL+'?check_same_thread=False')
+conn = engine.connect()
+metadata = db.MetaData()
+groups = db.Table('groups_config', metadata, autoload=True, autoload_with=engine)
+posts = db.Table('posts_config', metadata, autoload=True, autoload_with=engine)
 
 # require to connect files with each other
 from zebra_assistant import func, group_features, commandHandler
@@ -102,7 +105,7 @@ func.get_group_configuration()
 
 
 # For running without polling method
-if webhook:
+if constants.webhook:
     bot.remove_webhook()
     bot.set_webhook(url=constants.webhook_url, drop_pending_updates=True)
     app = Flask(__name__)

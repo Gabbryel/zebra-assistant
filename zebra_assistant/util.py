@@ -16,9 +16,8 @@ class Constants:
     def __init__(self, token, host_name):
         self._name = None
         self._username = None
-        self._admins_list: list = []
         self.__version = "0.1"
-        self.__author = "Itsydv"  # GitHub Username
+        self.__author = "gabbryel"  # GitHub Username
         self.__email = "itsydv@outlook.com"
         self.__github_repo = "zebra-assistant"
         self._website_url = None
@@ -30,6 +29,7 @@ class Constants:
         self.token: str = token
         self.host_name = host_name
         self.log_grp = None
+        self._webhook = False
 
     @property
     def name(self):
@@ -46,14 +46,6 @@ class Constants:
     @username.setter
     def username(self, username):
         self._username = username
-
-    @property
-    def admins_list(self):
-        return self._admins_list
-
-    @admins_list.setter
-    def admins_list(self, admins_list):
-        self._admins_list = admins_list
 
     @property
     def website_url(self):
@@ -100,5 +92,23 @@ class Constants:
         return f'https://{self.host_name}.herokuapp.com/{self.token}'
 
     @property
+    def log_grp(self):
+        return self._log_grp
+
+    @log_grp.setter
+    def log_grp(self, log_grp):
+        self._log_grp = log_grp
+
+    @property
+    def webhook(self):
+        return self._webhook
+
+    @property
     def github_repo(self):
         return rf'https://github.com/{self.__author}/{self.__github_repo}'
+
+    @property
+    def make_me_admin(self):
+        return "Hi! I am {bot_name}! Thanks for adding me! If you want a proper Group Management services from me " \
+               "then make me an admin with all right and permissions and then I will be able to perform a good " \
+               "service for You.!"

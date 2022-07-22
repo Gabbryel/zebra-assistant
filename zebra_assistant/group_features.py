@@ -10,11 +10,11 @@ from datetime import datetime
 
 import schedule
 import telebot
-from sqlalchemy import update, delete, select, insert
+from sqlalchemy import update, select
 from telebot.apihelper import ApiTelegramException
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from zebra_assistant import bot, func, repository, constants, groups, posts, conn, util
+from zebra_assistant import bot, func, repository, constants, groups, posts, conn
 
 MAKE_ME_ADMIN = "Please make me an admin with all rights and permissions in order for me to complete this request !!"
 
@@ -102,7 +102,10 @@ def send_insta_post(chats):
                 keyboard.add(InlineKeyboardButton(text="Like Post on Instagram", url=post[0]))
                 msg = "<b>New Instagram Post</b>\n{}".format(post[1])
                 for chat in chats:
-                    bot.send_photo(chat, post[2], caption=msg, reply_markup=keyboard, parse_mode="HTML")
+                    try:
+                        bot.send_photo(chat, post[2], caption=msg, reply_markup=keyboard, parse_mode="HTML")
+                    except ApiTelegramException:
+                        pass
             query = update(posts).values(last_insta_post_sent=datetime.utcnow().isoformat()[0:19] + "Z")
             conn.execute(query)
             return True if result else False
@@ -126,10 +129,19 @@ def send_facebook_posts(chats):
                     msg = "<b>New Facebook Post</b>\n{}".format(post.get('text'))
                     for chat in chats:
                         if post.get("video") is not None:
-                            bot.send_video(chat_id=chat, video=post.get("video"), thumb=post.get('video_thumbnail'),
-                                           caption=msg, reply_markup=keyboard)
+                            try:
+                                bot.send_video(chat_id=chat, video=post.get("video"), thumb=post.get('video_thumbnail'),
+                                               caption=msg, reply_markup=keyboard)
+                            except ApiTelegramException:
+                                pass
                         elif post.get("images") is not None:
-                            bot.send_message(chat, msg, reply_markup=keyboard)
+                            try:
+                                bot.send_photo(chat, post.get('images')[0], caption=msg, reply_markup=keyboard,
+                                               parse_mode="HTML")
+                            except ApiTelegramException:
+                                bot.send_message(chat, msg, reply_markup=keyboard, parse_mode="HTML")
+                            except Exception:
+                                pass
             query = update(posts).values(last_fb_post_sent=datetime.utcnow().isoformat()[0:19] + "Z")
             conn.execute(query)
             return True if result else False
@@ -156,7 +168,10 @@ def send_zebrabooking_dj(chats):
                 keyboard = InlineKeyboardMarkup(row_width=1)
                 keyboard.add(InlineKeyboardButton(text="Visit Artist's Page", url=event[4]))
                 for chat in chats:
-                    bot.send_photo(chat, photo=event[0], caption=msg, parse_mode="HTML", reply_markup=keyboard)
+                    try:
+                        bot.send_photo(chat, photo=event[0], caption=msg, parse_mode="HTML", reply_markup=keyboard)
+                    except ApiTelegramException:
+                        pass
             query = update(posts).values(sent_artists=json.dumps(list(set(new_events_fetched))))
             conn.execute(query)
             return True if events else False
@@ -177,11 +192,14 @@ def send_featured_bandcamp_album(chats):
             for album in featured_album:
                 keyboard = InlineKeyboardMarkup(row_width=1)
                 keyboard.add(InlineKeyboardButton(text="Listen on Bandcamp", url=album.get("url")))
-                msg = "<b>New Featured Album on Bandcamp</b>\n<a href='{}'>{}</a>"\
+                msg = "<b>New Featured Album on Bandcamp</b>\n<a href='{}'>{}</a>" \
                     .format(album.get('url'), album.get('title'))
                 for chat in chats:
-                    msg = bot.send_photo(chat, photo=album.get('img_url'), caption=msg, reply_markup=keyboard,
-                                         parse_mode="HTML")
+                    try:
+                        msg = bot.send_photo(chat, photo=album.get('img_url'), caption=msg, reply_markup=keyboard,
+                                             parse_mode="HTML")
+                    except ApiTelegramException:
+                        pass
                     bot.pin_chat_message(chat_id=chat, message_id=msg.message_id)
             query = update(posts).values(featured_albums_sent=json.dumps(list(set(new_albums_fetched))))
             conn.execute(query)
@@ -203,8 +221,11 @@ def send_new_bandcamp_album(chats):
                 keyboard.add(InlineKeyboardButton(text="Listen on Bandcamp", url=album.get("url")))
                 msg = "<b>New Album on Bandcamp</b>\n<a href='{}'>{}</a>".format(album.get('url'), album.get('title'))
                 for chat in chats:
-                    msg = bot.send_photo(chat, photo=album.get('img_url'), caption=msg, reply_markup=keyboard,
-                                         parse_mode="HTML")
+                    try:
+                        msg = bot.send_photo(chat, photo=album.get('img_url'), caption=msg, reply_markup=keyboard,
+                                             parse_mode="HTML")
+                    except ApiTelegramException:
+                        pass
     except Exception as e:
         logging.error(e)
         return False
@@ -255,7 +276,7 @@ def config_bot_user(message):
         pass
 
 
-@bot.message_handler(is_admin=True, chat_types=['group', 'supergroup'], is_authorized=True, commands=['config'])
+@bot.message_handler(is_admin=True, chat_types=['group', 'supergroup'], commands=['config'])
 def config_bot(message):
     try:
         # token = telebot.util.extract_arguments(message.text).strip()
@@ -264,26 +285,24 @@ def config_bot(message):
         except:
             pass
         keyboard = InlineKeyboardMarkup()
+        chat_id = message.chat.id
         options = [
-            InlineKeyboardButton("Welcome Message", callback_data="config-welcome"),
-            InlineKeyboardButton("Captcha Verification", callback_data="config-captcha"),
-            InlineKeyboardButton("Subscribe to Contents from Zebra Rec.", callback_data="config-autopost")]
+            InlineKeyboardButton("Welcome Message", callback_data=f"config_welcome_{chat_id}"),
+            InlineKeyboardButton("Captcha Verification", callback_data=f"config_captcha_{chat_id}"),
+            InlineKeyboardButton("Subscribe to Contents from Zebra Rec.", callback_data=f"config_autopost_{chat_id}")]
         for option in options:
             keyboard.row(option)
-        bot.send_message(message.chat.id, "These are the available options for you", reply_markup=keyboard)
+        try:
+            bot.send_message(message.from_user.id, f"These are the available options for you for the "
+                                                   f"chat <b>{message.chat.title}</b>", reply_markup=keyboard)
+        except:
+            bot.send_message(message.chat.id, "Before using this command Please Initialize me or"
+                                              " Unblock if you have blocked me")
     except Exception as e:
         if bot.get_chat_member(message.chat.id, bot.get_me().id).status not in ['administrator', 'creator']:
             bot.send_message(message.chat.id, MAKE_ME_ADMIN)
         else:
             logging.error(e)
-
-
-@bot.message_handler(is_admin=True, chat_types=['group', 'supergroup'], is_authorized=False, commands=['config'])
-def config_bot(message):
-    try:
-        bot.send_message(message.chat.id, "<b>Please provide valid authentication token to access this command.</b>")
-    except:
-        pass
 
 
 @bot.message_handler(chat_types=['private'], commands=['cancel'])
@@ -458,8 +477,8 @@ def report_user(message):
                                  f"\nReason: {reason}")
                 try:
                     bot.send_message(constants.log_grp,
-                                     f"{message.from_user.full_name} has Reported against {replied_msg.from_user.full_name}"
-                                     f"\nReason: {reason}")
+                                     f"{message.from_user.full_name} has Reported against"
+                                     f" {replied_msg.from_user.full_name}\nReason: {reason}")
                 except:
                     pass
             except ApiTelegramException as error:
@@ -472,60 +491,6 @@ This command is used to report a user in the chat.
 Reply with this command to the message sent by that user whom you want to report.""")
     except:
         pass
-
-
-@bot.message_handler(content_types=['group_chat_created'])
-def group_chat_created(message):
-    try:
-        if message.content_type == 'group_chat_created':
-            add_group(message.chat.id)
-            bot.send_message(message.chat.id,
-                             f"Hi! I am {constants.name}! Thanks for adding me! If you want a proper Group Management"
-                             f" services from me then make me an admin with all right and permissions and then I will "
-                             f"be able to perform a good service for You.!")
-    except Exception as e:
-        logging.error(e)
-
-
-@bot.message_handler(content_types=['new_chat_members'])
-def delete_join_message(message):
-    try:
-        for member in message.new_chat_members:
-            if member.id != bot.get_me().id:
-                if not member.is_bot and func.get_welcome(message.chat.id) == "on":
-                    bot.send_message(message.chat.id, util.welcome_msg(member.full_name, message.chat.title),
-                                     disable_web_page_preview=True)
-                if not member.is_bot and bot.get_chat_member(message.chat.id, message.from_user.id).status not in [
-                    'administrator'] \
-                        and func.get_captcha(message.chat.id) == "on":
-                    bot.restrict_chat_member(message.chat.id, member.id)
-                    func.solve_captcha(message, member.id)
-            else:
-                add_group(message.chat.id)
-                bot.send_message(message.chat.id,
-                                 f"Hi! I am {constants.name}! Thanks for adding me! If you want a proper Group"
-                                 f" Management services from me then make me an admin with all right and permissions "
-                                 f"and then I will be able to perform a good service for You.!")
-    except Exception as e:
-        logging.error(e)
-
-
-def add_group(group_id):
-    result = conn.execute(select(groups.c.chat_id).where(groups.c.chat_id == group_id)).fetchone()
-    if result is None:
-        query = insert(groups).values(chat_id=group_id)
-        conn.execute(query)
-
-
-@bot.my_chat_member_handler()
-def my_chat_handler(message):
-    try:
-        new = message.new_chat_member
-        if new.status == 'left':
-            # when bot removed from group
-            conn.execute(delete(groups).where(groups.c.chat_id == message.chat.id))
-    except Exception as e:
-        logging.error(e)
 
 
 # Class will check whether the user is admin or creator in group or not

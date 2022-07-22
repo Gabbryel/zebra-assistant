@@ -278,11 +278,12 @@ def sendBroadcast(title, url, chats):
 def config_commands(query):
     message = query.message
     data = query.data
+    chat_id = data.split('_')[2]
     try:
-        if bot.get_chat_member(message.chat.id, query.from_user.id).status not in ['administrator', 'creator']:
+        if bot.get_chat_member(chat_id, query.from_user.id).status not in ['administrator', 'creator']:
             bot.answer_callback_query(query.id, "Only Admins can Configure group settings!", show_alert=True)
             return
-        arg = data.split("-")[1]
+        arg = data.split("_")[1]
         bot.delete_message(message.chat.id, message.message_id)
         if arg == "welcome" or arg == "captcha" or arg == "autopost":
             if arg == "welcome":
@@ -292,34 +293,36 @@ def config_commands(query):
             else:
                 msg = "Auto Post"
             keyboard = InlineKeyboardMarkup()
-            query = text(f"SELECT {arg} FROM groups_config where chat_id = {message.chat.id}")
+            query = text(f"SELECT {arg} FROM groups_config where chat_id = {chat_id}")
             result = conn.execute(query).fetchone()
             if result[0] == 'off':
-                keyboard.row(InlineKeyboardButton(f'Turn {msg} On', callback_data=f'{arg}-on'))
+                keyboard.row(InlineKeyboardButton(f'Turn {msg} On', callback_data=f'{arg}_on_{chat_id}'))
             else:
-                keyboard.row(InlineKeyboardButton(f'Turn {msg} Off', callback_data=f'{arg}-off'))
+                keyboard.row(InlineKeyboardButton(f'Turn {msg} Off', callback_data=f'{arg}_off_{chat_id}'))
+            chat = bot.get_chat(chat_id)
             if arg == "welcome" or arg == "captcha":
-                bot.send_message(message.chat.id, f"This will Enable/disable {msg} for New Users",
+                bot.send_message(message.chat.id, f"This will Enable/disable {msg} for New Users in {chat.title}",
                                  reply_markup=keyboard)
             else:
-                bot.send_message(message.chat.id, f"This will Enable/disable {msg}", reply_markup=keyboard)
-    except:
-        pass
+                bot.send_message(message.chat.id, f"This will Enable/disable {msg} in {chat.title}",
+                                 reply_markup=keyboard)
+    except Exception as e:
+        logging.error(e)
 
 
 def handle_update_config(query):
     message = query.message
+    arg, option, chat_id = query.data.split("_")
     try:
-        if bot.get_chat_member(message.chat.id, query.from_user.id).status not in ['administrator', 'creator']:
+        if bot.get_chat_member(chat_id, query.from_user.id).status not in ['administrator', 'creator']:
             bot.answer_callback_query(query.id, "Only Admins can Configure group settings!", show_alert=True)
             return
-        arg, option = query.data.split("-")
-        sql_query = text(f"UPDATE groups_config SET {arg} = '{option}' WHERE chat_id = {message.chat.id}")
+        sql_query = text(f"UPDATE groups_config SET {arg} = '{option}' WHERE chat_id = {chat_id}")
         conn.execute(sql_query)
         if arg == "welcome":
-            welcome_preferences[message.chat.id] = option
+            welcome_preferences[chat_id] = option
         else:
-            captcha_preferences[message.chat.id] = option
+            captcha_preferences[chat_id] = option
         keyboard = InlineKeyboardMarkup()
         if arg == "welcome":
             msg = "Welcome Message"
@@ -328,9 +331,9 @@ def handle_update_config(query):
         else:
             msg = "Auto Post"
         if option == 'off':
-            keyboard.row(InlineKeyboardButton(f'Turn {msg} On', callback_data=f'{arg}-on'))
+            keyboard.row(InlineKeyboardButton(f'Turn {msg} On', callback_data=f'{arg}_on_{chat_id}'))
         else:
-            keyboard.row(InlineKeyboardButton(f'Turn {msg} Off', callback_data=f'{arg}-off'))
+            keyboard.row(InlineKeyboardButton(f'Turn {msg} Off', callback_data=f'{arg}_off_{chat_id}'))
         bot.answer_callback_query(query.id, "Configurations Updated Successfully!")
         bot.edit_message_reply_markup(message.chat.id, message.message_id, reply_markup=keyboard)
     except Exception as e:
