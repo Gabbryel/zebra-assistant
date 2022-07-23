@@ -1,7 +1,6 @@
 __pycache__/
 config/
 data/
-*.db
 downloads/
 *.log
 .venv

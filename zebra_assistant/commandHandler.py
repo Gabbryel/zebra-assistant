@@ -79,11 +79,9 @@ def my_chat_handler(message):
             conn.execute(delete(groups).where(groups.c.chat_id == message.chat.id))
         else:
             add_group(message.chat.id)
-            if new.status == 'administrator':
-                configure_bot_added(message)
-            else:
-                if message.chat.type == 'group':
-                    bot.send_message(message.chat.id, constants.make_me_admin.format(bot_name=constants.name))
+            configure_bot_added(message)
+            if new.status != 'administrator' and message.chat.type == 'group':
+                bot.send_message(message.chat.id, constants.make_me_admin.format(bot_name=constants.name))
     except Exception as e:
         logging.error(e)
 
