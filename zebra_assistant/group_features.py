@@ -66,18 +66,22 @@ def send_yt_videos(chats):
                 upcoming = True if video.get("liveBroadcastContent") == "upcoming" else False
                 keyboard = InlineKeyboardMarkup(row_width=1)
                 keyboard.add(InlineKeyboardButton(text="Watch on Youtube", url=video.get("url")))
-                msg = "<b>New Youtube Video</b>\n<a href='{}'>{}</a>".format(video.get('url'), video.get('title'))
+                if upcoming:
+                    msg = "<b>Upcoming Youtube Video</b>\nComing on {}<a href='{}'>{}</a>"\
+                        .format(video.get('url'), video.get('title'),
+                                video.get('publishedAt').strftime("%A, %d %B at %H:%M"))
+                else:
+                    msg = "<b>New Youtube Video</b>\n<a href='{}'>{}</a>".format(video.get('url'), video.get('title'))
                 for chat in chats:
                     try:
                         msg = bot.send_message(chat, msg, reply_markup=keyboard, parse_mode="HTML",
                                                disable_web_page_preview=False)
+                        if upcoming:
+                            bot.pin_chat_message(chat_id=chat, message_id=msg.message_id)
                     except ApiTelegramException:
-                        pass
-                    for entity in msg.entities:
-                        if entity.url == 'text_url':
-                            logging.error(entity)
-                    if upcoming:
-                        bot.pin_chat_message(chat_id=chat, message_id=msg.message_id)
+                        for entity in msg.entities:
+                            if entity.url == 'text_url':
+                                logging.error(entity)
                 if upcoming:
                     time_to_broadcast = (video.get('publishedAt') - datetime.utcnow()).total_seconds()
                     func.addBroadcast(video.get("title"), video.get("url"), time_to_broadcast, chats)
