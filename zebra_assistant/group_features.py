@@ -68,8 +68,8 @@ def send_yt_videos(chats):
                 keyboard.add(InlineKeyboardButton(text="Watch on Youtube", url=video.get("url")))
                 if upcoming:
                     msg = "<b>Upcoming Youtube Video</b>\nComing on {}<a href='{}'>{}</a>"\
-                        .format(video.get('url'), video.get('title'),
-                                video.get('publishedAt').strftime("%A, %d %B at %H:%M"))
+                        .format(video.get('publishedAt').strftime("%A, %d %B at %H:%M"),
+                                video.get('url'), video.get('title'))
                 else:
                     msg = "<b>New Youtube Video</b>\n<a href='{}'>{}</a>".format(video.get('url'), video.get('title'))
                 for chat in chats:
@@ -84,7 +84,9 @@ def send_yt_videos(chats):
                                 logging.error(entity)
                 if upcoming:
                     time_to_broadcast = (video.get('publishedAt') - datetime.utcnow()).total_seconds()
-                    func.addBroadcast(video.get("title"), video.get("url"), time_to_broadcast, chats)
+                    # TODO: fix sending of thousands of messages
+                    # TODO: no datetime provided for live broadcast, only published date on which announcement is made
+                    # func.addBroadcast(video.get("title"), video.get("url"), time_to_broadcast, chats)
             query = update(posts).values(last_yt_video_sent=datetime.utcnow().isoformat()[0:19] + "Z")
             conn.execute(query)
             return True if videos else False

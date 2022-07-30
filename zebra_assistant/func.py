@@ -257,7 +257,6 @@ def verify_captcha(query):
 def addBroadcast(title, url, time, chats):
     try:
         schedule.every(time).seconds.do(sendBroadcast, title=title, url=url, chats=chats)
-        print(f"Schedule for {title} is Added!")
     except Exception as e:
         logging.error(e)
 
@@ -268,8 +267,11 @@ def sendBroadcast(title, url, chats):
         keyboard = InlineKeyboardMarkup(row_width=1)
         keyboard.add(InlineKeyboardButton(text="Watch on Youtube", url=url))
         for chat in chats:
-            msg = bot.send_message(chat, msg, reply_markup=keyboard, parse_mode="HTML",
-                                   disable_web_page_preview=False)
+            try:
+                msg = bot.send_message(chat, msg, reply_markup=keyboard, parse_mode="HTML",
+                                       disable_web_page_preview=False)
+            except ApiTelegramException:
+                pass
         return schedule.CancelJob
     except Exception as e:
         logging.error(e)
