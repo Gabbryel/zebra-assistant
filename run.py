@@ -1,14 +1,21 @@
 import logging
+from time import sleep
 
 import requests
+from telebot.apihelper import ApiTelegramException
 
-from zebra_assistant import bot
+from zebra_assistant import bot, constants
 
 if __name__ == '__main__':
     bot.remove_webhook()
     try:
-        bot.infinity_polling(skip_pending=True, timeout=60)
+        bot.polling(skip_pending=True, non_stop=True)
+    except ApiTelegramException as e:
+        if "bad gateway" in e.description.lower():
+            bot.send_message(chat_id=constants.log_grp, text=e.description)
+        else:
+            logging.error(e)
     except requests.exceptions.Timeout:
-        pass
+        sleep(5)
     except Exception as e:
         logging.error(e)
