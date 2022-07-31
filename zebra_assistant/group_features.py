@@ -76,12 +76,13 @@ def send_yt_videos(chats):
                     try:
                         msg = bot.send_message(chat, msg, reply_markup=keyboard, parse_mode="HTML",
                                                disable_web_page_preview=False)
-                        if upcoming:
-                            bot.pin_chat_message(chat_id=chat, message_id=msg.message_id)
                     except ApiTelegramException:
                         for entity in msg.entities:
                             if entity.url == 'text_url':
                                 logging.error(entity)
+                    else:
+                        if upcoming:
+                            bot.pin_chat_message(chat_id=chat, message_id=msg.message_id)
                 if upcoming:
                     pass
                     # time_to_broadcast = (video.get('publishedAt') - datetime.utcnow()).total_seconds()

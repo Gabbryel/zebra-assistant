@@ -11,10 +11,7 @@ if __name__ == '__main__':
     try:
         bot.polling(skip_pending=True, non_stop=True)
     except ApiTelegramException as e:
-        if "bad gateway" in e.description.lower():
-            bot.send_message(chat_id=constants.log_grp, text=e.description)
-        else:
-            logging.error(e)
+        bot.send_message(chat_id=constants.log_grp, text=e.description)
     except requests.exceptions.Timeout:
         sleep(5)
     except Exception as e:

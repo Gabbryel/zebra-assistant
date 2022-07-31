@@ -272,9 +272,10 @@ def sendBroadcast(title, url, chats):
                                        disable_web_page_preview=False)
             except ApiTelegramException:
                 pass
-        return schedule.CancelJob
     except Exception as e:
         logging.error(e)
+    finally:
+        return schedule.CancelJob
 
 
 def config_commands(query):
