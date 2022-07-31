@@ -83,7 +83,8 @@ def send_yt_videos(chats):
                             if entity.url == 'text_url':
                                 logging.error(entity)
                 if upcoming:
-                    time_to_broadcast = (video.get('publishedAt') - datetime.utcnow()).total_seconds()
+                    pass
+                    # time_to_broadcast = (video.get('publishedAt') - datetime.utcnow()).total_seconds()
                     # TODO: fix sending of thousands of messages
                     # TODO: no datetime provided for live broadcast, only published date on which announcement is made
                     # func.addBroadcast(video.get("title"), video.get("url"), time_to_broadcast, chats)
